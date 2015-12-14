@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "ui/UIHelper.h"
 #include "ui/UIScale9Sprite.h"
 #include "2d/CCSprite.h"
+#include "editor-support/cocostudio/CocosStudioExtension.h"
 
 NS_CC_BEGIN
 
@@ -39,6 +40,7 @@ LoadingBar::LoadingBar():
 _direction(Direction::LEFT),
 _percent(100.0),
 _totalLength(0),
+_textureFile(""),
 _barRenderer(nullptr),
 _renderBarTexType(TextureResType::LOCAL),
 _barRendererTextureSize(Size::ZERO),
@@ -146,6 +148,7 @@ void LoadingBar::loadTexture(const std::string& texture,TextureResType texType)
     {
         return;
     }
+    _textureFile = texture;
     _renderBarTexType = texType;
     switch (_renderBarTexType)
     {
@@ -282,11 +285,14 @@ void LoadingBar::updateProgressBar()
     }
     else
     {
-        float res = _percent / 100.0f;
-        Sprite* spriteRenderer = _barRenderer->getSprite();
-        Rect rect = spriteRenderer->getTextureRect();
-        rect.size.width = _barRendererTextureSize.width * res;
-        spriteRenderer->setTextureRect(rect, spriteRenderer->isTextureRectRotated(), rect.size);
+        Sprite* innerSprite = _barRenderer->getSprite();
+        if (nullptr != innerSprite)
+        {
+            float res = _percent / 100.0f;
+            Rect rect = innerSprite->getTextureRect();
+            rect.size.width = _barRendererTextureSize.width * res;
+            innerSprite->setTextureRect(rect, innerSprite->isTextureRectRotated(), rect.size);
+        }
     }
 }
 
@@ -413,6 +419,14 @@ void LoadingBar::copySpecialProperties(Widget *widget)
         setPercent(loadingBar->_percent);
         setDirection(loadingBar->_direction);
     }
+}
+
+ResouceData LoadingBar::getRenderFile()
+{
+    ResouceData rData;
+    rData.type = (int)_renderBarTexType;
+    rData.file = _textureFile;
+    return rData;
 }
 
 }
